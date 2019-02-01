@@ -27,7 +27,7 @@ In depth documentation about frontend approach using this project at [Phase2 Fro
 - Strict [Atomic Design](http://atomicdesign.bradfrost.com/) component structure
 - Webpack bundling of all CSS, javascript, font, and static image assets for multiple targets (Drupal theme, Grav theme, Pattern Lab)
 - [Webpack Dev Server](https://github.com/webpack/webpack-dev-server) for local hosting and hot reloading of assets into Pattern Lab
-- [Twig namespaced paths](https://symfony.com/doc/current/templating/namespaced_paths.html) automatically added into Drupal theme and Pattern Lab config. Within any twig file, `@atoms/thing.twig` means the same thing to Drupal theme and Pattern Lab.
+- [Twig namespaced paths](https://symfony.com/doc/current/templating/namespaced_paths.html) automatically added into Drupal theme and Pattern Lab config. Within any twig file, `@default_atoms/thing.twig` means the same thing to Drupal theme and Pattern Lab.
 - Iconfont auto-generation
 - Bootstrap 4 integration, used for all starting example components
 - Auto-linting against the [AirBnB JavaScript Style Guide](https://github.com/airbnb/javascript) and sane Sass standards
@@ -63,7 +63,29 @@ npm install
 npm run setup
 npm start
 ```
-
 Simply wait until the webpack bundle output appears then visit [http://0.0.0.0:8080/pl](http://0.0.0.0:8080/pl) (or [http://localhost:8080/pl](http://localhost:8080/pl)) and start working.
+
+###  Quickstart C (Docksal)
+> This method is intended specifically to provide a [Docksal](https://docksal.io/) setup to host the PatternLab instance(s) during local development.
+
+1.  Ensure you have [Docksal](https://docksal.io/installation) installed locally.
+    > **Note**: For previous Outrigger users, Docksal may complain of a conflict when first starting the VM. You will need to edit you `/etc/exports` file accordingly, and also likely update `DOCKSAL_NFS_PATH` in `~/.docksal/docksal.env` if you use a directory outside of `/Users`.
+1.  Checkout the latest [Particle code](https://github.com/phase2/particle)
+1.  Extract anywhere (i.e. this readme should be at `any/where/particle/README.md`)
+1.  Within the extracted folder run:
+```bash
+fin vm start && fin start
+fin init
+fin watch
+```
+
+**Other available Docksal `fin` commands:**
+* `fin generate`: Generate `dist` folder for all design systems.
+* `fin generate SYSTEM`: Generate `dist` folder for specific design system. (`default`)
+* `fin nuke`: wipe out the `node_modules` directory and reinstall npm packages.
+* `fin npm COMMAND`: Pass any normal npm commands into the container to run. (`fin npm run build:pl`)
+
+Simply wait until the Webpack bundle output appears then visit [dev.particle.docksal/pl-default/](http://dev.particle.docksal/pl-default) and start working.
+
 
 That's it. For **much** greater detail on the frontend approach using this project, check out the [Phase2 Frontend Docs](https://phase2.gitbook.io/frontend/).

@@ -1,0 +1,73 @@
+# Docksal configuration for Particle project(s).
+#
+# @see https://blog.docksal.io/zero-configuration-debugging-with-xdebug-and-phpstorm-3dd2a0507758
+version: "2.1"
+services:
+  cli:
+    labels:
+      # Give this container a virtual host name we can use. (dev.particle.docksal)
+      - io.docksal.virtual-host=dev.${VIRTUAL_HOST:-particle.docksal}
+      # Assign a port number that we'll use to access PL.
+      # This IS the port that the webpack-dev-server runs on, though because
+      # we set this here, we can access the URL without the port number like:
+      # http://dev.particle.docksal/pl-default/
+      - io.docksal.virtual-port=${PATTERNLAB_PORT:-8080}
+    environment:
+      # Path to particle instance for various Docksal commands ran inside the cli container.
+      - PARTICLE_ROOT=${PARTICLE_ROOT:-/var/www}
+      - PROJECT_PATH=${PROJECT_ROOT:-/var/www}
+
+    # Here we would add additional ports if we were attempting to run multiple watched
+    # design systems at one time.
+    #
+    # It is possible to watch (many) multiple design systems at the same time.
+    # Our URLs (when fin watch X is ran) The `commands/watch` script would need to handle this.
+    # - http://dev.particle.docksal:8080/pl-default/
+    # - http://dev.particle.docksal:8081/pl-design-system-two/
+    # - http://dev.particle.docksal:8082/pl-design-system-three/
+    ports:
+      - "8080:8080"
+      # - "8081:8081"
+      # - "8082:8082"
+
+  # Because we are using the `default-nodb` Docksal stack by default (do not include a database)
+  # We have to re-include the default web container.
+  web:
+    extends:
+      file: ${HOME}/.docksal/stacks/services.yml
+      service: web
+    labels:
+      # Give this container a virtual host name we can use.
+      - io.docksal.virtual-host=${VIRTUAL_HOST:-particle.docksal}
+    environment:
+      - PARTICLE_ROOT=${PARTICLE_ROOT:-/var/www}
+      - PROJECT_PATH=${PROJECT_ROOT:-/var/www}
+      # By setting the APACHE_DOCUMENTROOT to the `dist` folder, we have the ability on
+      # this default web container to access anything generated to `dist`, including
+      # multiple PL instances.
+      #
+      # This means, we need a great index.html at the root of `dist` that COULD be used
+      # as a landing page for local, qa/staging/prod environments for pipelines that
+      # include generated assets. This wouldn't be needed in a strictly Drupal environment,
+      # but would be greatly beneficial for standing up Pattern Lab builds.
+      - APACHE_DOCUMENTROOT=${PARTICLE_ROOT:-/var/www}/${DOCROOT:-dist}
+
+  # Custom web container for default design system assets.
+  # This allows us to run an Apache container to serve up "ONLY" the
+  # Compiled (latest) files and assets for PL.
+  #
+  # This isn't terribly useful locally, with the exception of demos.
+  # This could however, prove useful in a variety of pipeline workflow
+  # environments.
+  static_default:
+    extends:
+      file: ${HOME}/.docksal/stacks/services.yml
+      service: web
+    labels:
+      # This value for default.patterns should change depending on the
+      # name of the design system if there are multiple.
+      - io.docksal.virtual-host=default.${VIRTUAL_HOST:-particle.docksal}
+    environment:
+      - PARTICLE_ROOT=${PARTICLE_ROOT:-/var/www}
+      - PROJECT_PATH=${PROJECT_ROOT:-/var/www}
+      - APACHE_DOCUMENTROOT=${PARTICLE_ROOT:-/var/www}/${DOCROOT:-dist}/pl-default

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# Causes this script to run inside the docksal cli container.
+#: exec_target = cli
+
+## Delete any external dependencies and reinstall.
+# If this were a Drupal project, you'd also want to do something similar
+# to the following example:
+
+# Change into the root project directory, purge vendor directory
+# and reinstall all composer.json dependencies.
+# cd ${PROJECT_ROOT}
+# rm -rf vendor && composer install
+
+# Change into the root particle directory, purge node_modules directory
+# and reinstall all package.json dependencies.
+cd ${PARTICLE_ROOT}
+rm -rf node_modules && npm install

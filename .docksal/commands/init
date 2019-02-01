@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Causes this script to run inside the docksal cli container.
+#: exec_target = cli
+
+## Build and setup environment initially.
+cd ${PARTICLE_ROOT}
+npm install
+npm run setup

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Causes this script to run inside the docksal cli container.
+#: exec_target = cli
+
+## Run the Pattern Lab build script(s) used for production.
+
+# Change to the Particle root directory.
+cd ${PARTICLE_ROOT}
+
+# Check to see if node_modules exists.
+# If not, then npm install before we npm start.
+if [ ! -d "${PARTICLE_ROOT}/node_modules" ]; then
+  npm install
+fi
+
+# Determine if the user passed in an argument.
+if [[ ! ("$#" -eq 1) ]]; then
+  # Run the build script with no args.
+  npm run build:pl
+else
+  # Run the start script for a specific system.
+  npm run build:pl:$1
+fi
+
+

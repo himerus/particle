@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Causes this script to run inside the docksal cli container.
+#: exec_target = cli
+
+# @todo: The watch script should also (probably) include watching other apps than PL or do so with an argument passed in.
+## Run the watch script(s) used for development.
+
+# Change to the Particle root directory.
+cd ${PARTICLE_ROOT}
+
+# Check to see if node_modules exists.
+# If not, then npm install before we npm start.
+if [ ! -d "${PARTICLE_ROOT}/node_modules" ]; then
+  npm install
+fi
+
+# Determine if the user passed in an argument.
+if [[ ! ("$#" -eq 1) ]]; then
+  # Run the start script with no args.
+  npm run dev:pl
+else
+  # Run the start script for a specific system.
+  npm run dev:pl:$1
+fi
+
+
+
