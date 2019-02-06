@@ -62,9 +62,13 @@ plugins:
           - ../../../source/default/_patterns/01-atoms/button
           - ../../../source/default/_patterns/01-atoms/dropdown
           - ../../../source/default/_patterns/01-atoms/grid
+          - ../../../source/default/_patterns/01-atoms/gross
           - ../../../source/default/_patterns/01-atoms/image
           - ../../../source/default/_patterns/01-atoms/list-group
           - ../../../source/default/_patterns/01-atoms/svgicon
+          - ../../../source/default/_patterns/01-atoms/tastier
+          - ../../../source/default/_patterns/01-atoms/tasty
+          - ../../../source/default/_patterns/01-atoms/tasty-two
       molecules:
         paths:
           - ../../../source/default/_patterns/02-molecules

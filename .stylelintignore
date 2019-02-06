@@ -6,3 +6,6 @@ dist/
 pattern-lab/
 
 _icons-generated.scss
+
+tools/cli/templates/component
+tools/cli/templates/system
