@@ -18,6 +18,11 @@ module.exports = {
       value: 'system',
       short: 'Design System',
     },
+    {
+      name: 'Delete an existing Design System',
+      value: 'deleteSystem',
+      short: 'Delete a Design System',
+    },
   ],
   // The types of partials we allow user to select from.
   // Others would be automatically added.

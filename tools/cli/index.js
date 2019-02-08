@@ -6,6 +6,9 @@
 const { join } = require('path');
 
 const { readdirSync, statSync, existsSync } = require('fs');
+
+const del = require('del');
+
 const { PATH_SOURCE: sourceDirectory } = require('../../particle.root.config');
 const {
   TYPES: generatorTypes,
@@ -23,23 +26,43 @@ module.exports = function(plop) {
         name: 'type',
         message: 'What would you like to create?',
         choices: generatorTypes,
+        default: 'system',
       },
       {
         type: 'list',
         name: 'system',
         message(input) {
-          // Get more data from our TYPES variable about this type.
-          const type = generatorTypes.find(t => t.value === input.type);
-          return `To which design system would you like to add this new ${
-            type.short
-          }?`;
+          if (input.type === 'component') {
+            // Get more data from our TYPES variable about this type.
+            const type = generatorTypes.find(t => t.value === input.type);
+            return `To which design system would you like to add this new ${
+              type.short
+            }?`;
+          }
+
+          if (input.type === 'deleteSystem') {
+            return `Which design system would you like to delete?`;
+          }
+
+          return '';
         },
         choices: readdirSync(sourceDirectory, 'utf8').filter(folder =>
           statSync(join(sourceDirectory, folder)).isDirectory()
         ),
         // Only when we are adding a Component.
         when(input) {
-          return input.type === 'component';
+          return input.type === 'component' || input.type === 'deleteSystem';
+        },
+      },
+      {
+        type: 'confirm',
+        name: 'confirmDelete',
+        message(input) {
+          return `Are you sure you want to delete ${input.system}?`;
+        },
+        // Only when we are adding a Component.
+        when(input) {
+          return input.type === 'deleteSystem';
         },
       },
       {
@@ -102,6 +125,10 @@ module.exports = function(plop) {
             folder => statSync(join(patternSubPath, folder)).isDirectory()
           );
           return ['./'].concat(subfolders);
+        },
+        // Only when we are adding a Component.
+        when(input) {
+          return input.type === 'component';
         },
       },
       {
@@ -168,8 +195,27 @@ module.exports = function(plop) {
             }
           }
 
+          if (data.type === 'system') {
+            // @todo: Create a better regex to handle the same format as dashCase.
+            const newSystemPath = input
+              .trim()
+              .replace('/(?!\\w|\\s)./g', '-')
+              .trim(' ', '-')
+              .replace('/\\s+/g', '-')
+              .toLowerCase();
+            // const newComponentPath = plop.dashCase(input);
+            const destinationPath = join(sourceDirectory, newSystemPath);
+
+            if (existsSync(destinationPath.trim())) {
+              return `The design system ${newSystemPath} already exists at ${destinationPath}`;
+            }
+          }
+
           // If no tests failed and exited early, return true.
           return true;
+        },
+        when(input) {
+          return input.type === 'component' || input.type === 'system';
         },
       },
     ],
@@ -179,38 +225,6 @@ module.exports = function(plop) {
 
       const actions = [];
 
-      // eslint-disable-next-line global-require,import/no-dynamic-require
-      const { sets: atomicPaths } = require(`${join(
-        sourceDirectory,
-        input.system
-      )}/namespaces.js`);
-
-      const atomicNamespaces = Object.keys(atomicPaths);
-
-      // @todo: Need to somehow produce an object like below to attach to input.namespaces.
-      // [protons: 'default_protons', atoms: 'default_atoms', ...]
-
-      // eslint-disable-next-line no-param-reassign
-      input.namespaces = atomicNamespaces.reduce((acc, atomic) => {
-        defaultNamespaces.map(namespace => {
-          if (atomic.includes(namespace)) {
-            acc[namespace] = atomic;
-          }
-          return null;
-        });
-        return acc;
-      }, {});
-
-      // eslint-disable-next-line no-param-reassign
-      input.componentNamespace = atomicNamespaces.reduce((acc, atomic) => {
-        if (atomicPaths[atomic].includes(input.componentPath)) {
-          actions.push(`${atomic}: ${atomicPaths[atomic]}`);
-          acc = atomic;
-        }
-
-        return acc;
-      });
-
       // Get more data from our TYPES variable about this type.
       const type = generatorTypes.find(t => t.value === input.type);
 
@@ -218,9 +232,14 @@ module.exports = function(plop) {
       actions.push(`Initializing ${type.short} creation tool...`);
 
       // eslint-disable-next-line no-unused-vars
+      const deleteSystemPath =
+        type.value === 'deleteSystem'
+          ? `${sourceDirectory}/${input.system}`
+          : false;
+
       const newSystemPath =
         type.value === 'system'
-          ? `${sourceDirectory}/{{ dashCase input.name }}`
+          ? `${sourceDirectory}/{{ dashCase name }}`
           : false;
 
       const newComponentPath =
@@ -232,8 +251,41 @@ module.exports = function(plop) {
         default:
           break;
         case 'component':
-          // Pass a message to the console.
-          actions.push(`Adding default files.`);
+          // eslint-disable-next-line global-require,import/no-dynamic-require, no-case-declarations
+          const { sets: atomicPaths } = require(`${join(
+            sourceDirectory,
+            input.system
+          )}/namespaces.js`);
+
+          // eslint-disable-next-line no-case-declarations
+          const atomicNamespaces = Object.keys(atomicPaths);
+
+          // @todo: Need to somehow produce an object like below to attach to input.namespaces.
+          // [protons: 'default_protons', atoms: 'default_atoms', ...]
+
+          // eslint-disable-next-line no-param-reassign
+          input.namespaces = atomicNamespaces.reduce((acc, atomic) => {
+            defaultNamespaces.map(namespace => {
+              if (atomic.includes(namespace)) {
+                acc[namespace] = atomic;
+              }
+              return null;
+            });
+            return acc;
+          }, {});
+
+          // @todo: Maybe reduce() is incorrect here. I only want the last static value which should be the only match.
+          // eslint-disable-next-line no-param-reassign
+          input.componentNamespace = atomicNamespaces.reduce((acc, atomic) => {
+            if (atomicPaths[atomic].includes(input.componentPath)) {
+              actions.push(`${atomic}: ${atomicPaths[atomic]}`);
+              // eslint-disable-next-line no-param-reassign
+              acc = atomic;
+            }
+
+            return acc;
+          });
+
           // Create a README.md file.
           actions.push({
             type: 'add',
@@ -253,8 +305,6 @@ module.exports = function(plop) {
 
           // Add in a twig template if the user opted for it.
           if (input.selections.includes('twig')) {
-            // Pass a message to the console.
-            actions.push(`Adding default files for Twig.`);
             actions.push({
               type: 'add',
               path: `${newComponentPath}/_{{dashCase name}}.twig`,
@@ -266,8 +316,6 @@ module.exports = function(plop) {
 
           // Add in a scss template if the user opted for it.
           if (input.selections.includes('scss')) {
-            // Pass a message to the console.
-            actions.push(`Adding default files for SCSS.`);
             actions.push({
               type: 'add',
               path: `${newComponentPath}/_{{dashCase name}}.scss`,
@@ -279,8 +327,6 @@ module.exports = function(plop) {
 
           // Add in a demo template if the user opted for it.
           if (input.selections.includes('demo')) {
-            // Pass a message to the console.
-            actions.push(`Adding default files for a demo component.`);
             // Create a README.md file.
             actions.push({
               type: 'add',
@@ -316,10 +362,9 @@ module.exports = function(plop) {
           // Add in sample Jest tests if the user opted for it.
           if (input.selections.includes('tests')) {
             // Pass a message to the console.
-            actions.push(`Adding default Jest test.`);
             actions.push({
               type: 'add',
-              path: `${newComponentPath}/__tests__/{{dashCase name}}.test.js`,
+              path: `${newComponentPath}/__tests__/≈.test.js`,
               templateFile: 'templates/component/pattern-test.js',
               skipIfExists: true,
               abortOnFail: true,
@@ -329,10 +374,65 @@ module.exports = function(plop) {
           break;
 
         case 'system':
+          // // Create a README.md file.
+          // actions.push({
+          //   type: 'add',
+          //   path: `${newSystemPath}/README.md`,
+          //   templateFile: 'templates/system/README.md',
+          //   skipIfExists: true,
+          //   abortOnFail: true,
+          // });
+          //
+          // // Create a namespaces.js file.
+          // actions.push({
+          //   type: 'add',
+          //   path: `${newSystemPath}/namespaces.js`,
+          //   templateFile: 'templates/system/namespaces.js',
+          //   skipIfExists: true,
+          //   abortOnFail: true,
+          // });
+          //
+          // // Create a .eslintrc.js file.
+          // actions.push({
+          //   type: 'add',
+          //   path: `${newSystemPath}/.eslintrc.js`,
+          //   templateFile: 'templates/system/.eslintrc.js',
+          //   skipIfExists: true,
+          //   abortOnFail: true,
+          // });
+
+          // Add a whole boatload of files.
+          actions.push({
+            type: 'addMany',
+            destination: `${newSystemPath}/`,
+            templateFiles: 'templates/system/**/*',
+            base: 'templates/system',
+            skipIfExists: false,
+            abortOnFail: true,
+            force: true,
+            verbose: true,
+          });
+
+          break;
+
+        case 'deleteSystem':
           break;
       }
-      // Let users know we've reached the end of our journey.
-      actions.push(`Your new ${type.short}, ${input.name} has been generated.`);
+
+      if (input.type === 'component' || input.type === 'system') {
+        // Let users know we've reached the end of our journey.
+        actions.push(
+          `Your new ${type.short}, ${input.name} has been generated.`
+        );
+      }
+
+      if (input.type === 'deleteSystem' && !!input.confirmDelete) {
+        del.sync([`${deleteSystemPath}`], {
+          dryRun: false, // Set this to true to debug without deleting anything.
+        });
+
+        actions.push(`The design system ${input.system} has been deleted.`);
+      }
       // @todo: This would be a great spot for additional info about the created item like a URL or something even?
 
       // Debug the entire input object.
