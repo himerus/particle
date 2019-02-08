@@ -19,7 +19,8 @@ const {
 
 module.exports = function(plop) {
   plop.setGenerator('particle', {
-    description: 'Select the ',
+    description:
+      'Generator for adding components and adding & removing design systems.',
     prompts: [
       {
         type: 'list',
@@ -228,9 +229,6 @@ module.exports = function(plop) {
       // Get more data from our TYPES variable about this type.
       const type = generatorTypes.find(t => t.value === input.type);
 
-      // Pass a string to Plop to return to console.
-      actions.push(`Initializing ${type.short} creation tool...`);
-
       // eslint-disable-next-line no-unused-vars
       const deleteSystemPath =
         type.value === 'deleteSystem'
@@ -250,7 +248,13 @@ module.exports = function(plop) {
       switch (type.value) {
         default:
           break;
+        /**
+         * component: Create design system.
+         */
         case 'component':
+          // Pass a string to Plop to return to console.
+          actions.push(`Initializing Component Builder...`);
+
           // eslint-disable-next-line global-require,import/no-dynamic-require, no-case-declarations
           const { sets: atomicPaths } = require(`${join(
             sourceDirectory,
@@ -373,39 +377,17 @@ module.exports = function(plop) {
 
           break;
 
+        /**
+         * system: Create design system.
+         */
         case 'system':
-          // // Create a README.md file.
-          // actions.push({
-          //   type: 'add',
-          //   path: `${newSystemPath}/README.md`,
-          //   templateFile: 'templates/system/README.md',
-          //   skipIfExists: true,
-          //   abortOnFail: true,
-          // });
-          //
-          // // Create a namespaces.js file.
-          // actions.push({
-          //   type: 'add',
-          //   path: `${newSystemPath}/namespaces.js`,
-          //   templateFile: 'templates/system/namespaces.js',
-          //   skipIfExists: true,
-          //   abortOnFail: true,
-          // });
-          //
-          // // Create a .eslintrc.js file.
-          // actions.push({
-          //   type: 'add',
-          //   path: `${newSystemPath}/.eslintrc.js`,
-          //   templateFile: 'templates/system/.eslintrc.js',
-          //   skipIfExists: true,
-          //   abortOnFail: true,
-          // });
-
+          // Pass a string to Plop to return to console.
+          actions.push(`Initializing design system creation tool...`);
           // Add a whole boatload of files.
           actions.push({
             type: 'addMany',
             destination: `${newSystemPath}/`,
-            templateFiles: 'templates/system/**/*',
+            templateFiles: 'templates/system/**',
             base: 'templates/system',
             skipIfExists: false,
             abortOnFail: true,
@@ -415,7 +397,20 @@ module.exports = function(plop) {
 
           break;
 
+        /**
+         * deleteSystem: Delete design system.
+         */
         case 'deleteSystem':
+          // Pass a string to Plop to return to console.
+          actions.push(`Initializing design system deletion tool...`);
+
+          if (input.confirmDelete) {
+            del.sync([`${deleteSystemPath}`], {
+              dryRun: false, // Set this to true to debug without deleting anything.
+            });
+
+            actions.push(`The design system ${input.system} has been deleted.`);
+          }
           break;
       }
 
@@ -425,19 +420,9 @@ module.exports = function(plop) {
           `Your new ${type.short}, ${input.name} has been generated.`
         );
       }
-
-      if (input.type === 'deleteSystem' && !!input.confirmDelete) {
-        del.sync([`${deleteSystemPath}`], {
-          dryRun: false, // Set this to true to debug without deleting anything.
-        });
-
-        actions.push(`The design system ${input.system} has been deleted.`);
-      }
       // @todo: This would be a great spot for additional info about the created item like a URL or something even?
-
       // Debug the entire input object.
-      console.log(input);
-
+      // console.log(input);
       return actions;
     },
   });
