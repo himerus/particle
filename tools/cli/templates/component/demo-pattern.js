@@ -6,12 +6,12 @@
  */
 
 // Import component assets
-import '{{ cleanPatternType }}/{{ dashCase name }}';
+import '{{ componentNamespace }}/{{ dashCase name }}';
 
 // Import demo assets
-import twig from './{{ dashCase name }}s.twig';
-import yaml from './{{ dashCase name }}s.yml';
-import markdown from './{{ dashCase name }}s.md';
+import twig from './{{ dashCase name }}.twig';
+import yaml from './{{ dashCase name }}.yml';
+import markdown from './README.md';
 
 export default {
   twig,

@@ -5,7 +5,7 @@
 import $ from 'jquery';
 
 // Module dependencies
-import 'protons';
+import '{{ namespaces.protons }}';
 
 // Module styles
 import './_{{ dashCase name }}.scss';
@@ -39,7 +39,7 @@ export function disable($context, settings) {}
  */
 export function enable($context, { {{ camelCase name }} = {} }) {
   // Find our component within the DOM
-  const ${{ camelCase name }} = $('.{{ camelCase name }}', $context);
+  const ${{ camelCase name }} = $('.{{ dashCase name }}', $context);
   // Bail if component does not exist
   if (!${{ camelCase name }}.length) {
     return;
