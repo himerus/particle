@@ -17,9 +17,12 @@
     "prototyping"
   ],
   "scripts": {
-    "start": "npm run dev:pl",
-    "dev:pl": "cross-env-shell NODE_ENV=development \"gulp compile:startup --config ./apps/pl/particle.app.config.js & webpack-dev-server --config ./apps/pl/webpack.config.js --hot\"",
-    "build:pl": "cross-env-shell NODE_ENV=production \"gulp compile:startup --config ./apps/pl/particle.app.config.js && webpack --config ./apps/pl/webpack.config.js\"",
+    "start": "npm run dev:pl:node",
+    "build": "npm run build:pl:node",
+    "dev:pl": "cross-env-shell NODE_ENV=development PL_ENV=php \"gulp compile:startup --config ./apps/pl/particle.app.config.js & webpack-dev-server --config ./apps/pl/webpack.config.js --hot\"",
+    "dev:pl:node": "cross-env-shell NODE_ENV=development PL_ENV=node \"gulp compile:startup --config ./apps/pl-node/particle.app.config.js & webpack-dev-server --config ./apps/pl-node/webpack.config.js --hot\"",
+    "build:pl": "cross-env-shell NODE_ENV=production PL_ENV=php \"gulp compile:startup --config ./apps/pl/particle.app.config.js && webpack --config ./apps/pl/webpack.config.js\"",
+    "build:pl:node": "cross-env-shell NODE_ENV=production PL_ENV=node \"gulp compile:startup --config ./apps/pl-node/particle.app.config.js && webpack --config ./apps/pl-node/webpack.config.js\"",
     "dev:drupal": "cross-env-shell NODE_ENV=development \"gulp compile:namespaces --config ./apps/drupal/particle.app.config.js && webpack --watch --config ./apps/drupal/webpack.config.js\"",
     "build:drupal": "cross-env-shell NODE_ENV=production \"gulp compile:namespaces --config ./apps/drupal/particle.app.config.js && webpack --config ./apps/drupal/webpack.config.js\"",
     "dev:grav": "cross-env-shell NODE_ENV=development \"gulp compile:namespaces --config ./apps/grav/particle.app.config.js && webpack --watch --config ./apps/grav/webpack.config.js\"",
@@ -41,6 +44,10 @@
     "new": "yo ./tools/new-component/index.js"
   },
   "dependencies": {
+    "@pattern-lab/cli": "^0.0.3-alpha.0",
+    "@pattern-lab/core": "^3.0.1-alpha.0",
+    "@pattern-lab/engine-twig-php": "^3.0.0",
+    "@pattern-lab/uikit-workshop": "^1.0.1-alpha.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.17",
     "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "bootstrap": "^4.3.1",

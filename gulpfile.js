@@ -10,7 +10,7 @@ const gulp = require('gulp');
 const { argv } = require('yargs');
 
 // Constants: environment
-const { NODE_ENV = 'production' } = process.env;
+const { NODE_ENV = 'production', PL_ENV = 'node' } = process.env;
 // Constants: root
 const { PATH_DIST } = require('./particle.root.config');
 // Per-app config, sent in via command line args
@@ -22,7 +22,10 @@ const config = require(argv.config);
 // Config: Path to Pattern Lab installation.
 const plPath = path.resolve(config.APP_PATH, 'pattern-lab');
 // PL compilation function, loaded up with the the PL path
-const plCompile = require('./tools/tasks/pl-compile')(plPath);
+const plCompile =
+  PL_ENV && PL_ENV === 'php'
+    ? require('./tools/tasks/pl-compile')(plPath)
+    : require('./tools/tasks/pl-node-compile')(plPath);
 
 /**
  * Pattern Lab compile task
@@ -96,7 +99,7 @@ gulp.task(
   // prettier-ignore
   gulp.series([
     'compile:pl:notify:pre',
-    'compile:namespaces',
+    // 'compile:namespaces',
     'compile:pl',
     'compile:pl:notify:post',
   ])

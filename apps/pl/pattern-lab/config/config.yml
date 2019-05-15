@@ -61,6 +61,8 @@ plugins:
           - ../../../source/default/_patterns/01-atoms/breadcrumb
           - ../../../source/default/_patterns/01-atoms/button
           - ../../../source/default/_patterns/01-atoms/dropdown
+          - ../../../source/default/_patterns/01-atoms/generator-plop
+          - ../../../source/default/_patterns/01-atoms/generator-yo
           - ../../../source/default/_patterns/01-atoms/grid
           - ../../../source/default/_patterns/01-atoms/image
           - ../../../source/default/_patterns/01-atoms/list-group
